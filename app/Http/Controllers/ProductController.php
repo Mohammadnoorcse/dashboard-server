@@ -29,7 +29,7 @@ class ProductController extends Controller
     if ($request->hasFile('images')) {
         $data['images'] = [];
         foreach ($request->file('images') as $file) {
-            $path = $file->store('products', 'public');
+            $path = $file->store('uploads/products', 'public');
             $data['images'][] = $path;
         }
     }
@@ -50,7 +50,7 @@ class ProductController extends Controller
         if ($request->hasFile('images')) {
             $newImages = [];
             foreach ($request->file('images') as $file) {
-                $path = $file->store('products', 'public');
+                $path = $file->store('uploads/products', 'public');
                 $newImages[] = $path;
             }
 
@@ -76,19 +76,21 @@ class ProductController extends Controller
 
 
 
-    // Delete product
-    public function destroy($id)
+   public function destroy($id)
     {
         $product = Product::findOrFail($id);
 
-        // Optional: Delete images from storage
-        if($product->images){
-            foreach(json_decode($product->images) as $img){
-                \Storage::disk('public')->delete($img);
+        // Delete images from storage
+        if($product->images && is_array($product->images)){
+            foreach($product->images as $img){
+                if(\Storage::disk('public')->exists($img)){
+                    \Storage::disk('public')->delete($img);
+                }
             }
         }
 
         $product->delete();
-        return response()->json(['success'=>true,'message'=>'Product deleted']);
+        return response()->json(['success'=>true, 'message'=>'Product deleted']);
     }
+
 }
