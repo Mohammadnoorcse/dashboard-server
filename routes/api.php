@@ -11,6 +11,14 @@ use App\Http\Controllers\CouponCategory;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\FeaturesTopNavbarController;
+use App\Http\Controllers\FeaturesSidebarController;
+use App\Http\Controllers\FeaturesLogoController;
+use App\Http\Controllers\WebHomeController;
+use App\Http\Controllers\WebHeaderLogoController;
+use App\Http\Controllers\WebFooterLogoController;
+use App\Http\Controllers\HomeSliderController;
+use App\Http\Controllers\VideoController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -83,5 +91,61 @@ Route::prefix('products')->group(function() {
     Route::post('/', [ProductController::class, 'store']);
     Route::put('/{id}', [ProductController::class, 'update']);
     Route::delete('/{id}', [ProductController::class, 'destroy']);
+    
+});
+Route::prefix('featurestopnavbar')->group(function() {
+    Route::get('/', [FeaturesTopNavbarController::class, 'index']);
+    Route::post('/', [FeaturesTopNavbarController::class, 'store']);
+    Route::put('/{id}', [FeaturesTopNavbarController::class, 'update']);
+    Route::delete('/{id}', [FeaturesTopNavbarController::class, 'destroy']);
+    
+});
+Route::prefix('featuresidebar')->group(function() {
+    Route::get('/', [FeaturesSidebarController::class, 'index']);
+    Route::post('/', [FeaturesSidebarController::class, 'store']);
+    Route::put('/{id}', [FeaturesSidebarController::class, 'update']);
+    Route::delete('/{id}', [FeaturesSidebarController::class, 'destroy']);
+    
+});
+Route::prefix('featurelogo')->group(function() {
+    Route::get('/', [FeaturesLogoController::class, 'index']);
+    Route::post('/', [FeaturesLogoController::class, 'store']);
+    Route::put('/{id}', [FeaturesLogoController::class, 'update']);
+    Route::delete('/{id}', [FeaturesLogoController::class, 'destroy']);
+    
+});
+Route::prefix('webhome')->group(function() {
+    Route::get('/', [WebHomeController::class, 'index']);
+    Route::post('/', [WebHomeController::class, 'store']);
+    Route::put('/{id}', [WebHomeController::class, 'update']);
+    Route::delete('/{id}', [WebHomeController::class, 'destroy']);
+    
+});
+Route::prefix('webheaderlogos')->group(function() {
+    Route::get('/', [WebHeaderLogoController::class, 'index']);
+    Route::post('/', [WebHeaderLogoController::class, 'store']);
+    Route::put('/{id}', [WebHeaderLogoController::class, 'update']);
+    Route::delete('/{id}', [WebHeaderLogoController::class, 'destroy']);
+    
+});
+Route::prefix('webfooterlogo')->group(function() {
+    Route::get('/', [WebFooterLogoController::class, 'index']);
+    Route::post('/', [WebFooterLogoController::class, 'store']);
+    Route::put('/{id}', [WebFooterLogoController::class, 'update']);
+    Route::delete('/{id}', [WebFooterLogoController::class, 'destroy']);
+    
+});
+Route::prefix('homesliders')->group(function() {
+    Route::get('/', [HomeSliderController::class, 'index']);
+    Route::post('/', [HomeSliderController::class, 'store']);
+    Route::put('/{id}', [HomeSliderController::class, 'update']);
+    Route::delete('/{id}', [HomeSliderController::class, 'destroy']);
+    
+});
+Route::prefix('videos')->group(function() {
+    Route::get('/', [VideoController::class, 'index']);
+    Route::post('/', [VideoController::class, 'store']);
+    Route::put('/{id}', [VideoController::class, 'update']);
+    Route::delete('/{id}', [VideoController::class, 'destroy']);
     
 });
