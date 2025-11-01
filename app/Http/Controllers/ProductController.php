@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -40,31 +41,71 @@ class ProductController extends Controller
     return response()->json($product, 201);
 }
 
- // Update product
-    public function update(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
-        $data = $request->all();
+//  // Update product
+//     public function update(Request $request, $id)
+//     {
+//         $product = Product::findOrFail($id);
+//         $data = $request->all();
 
-        // Handle new images if uploaded
-        if ($request->hasFile('images')) {
-            $newImages = [];
-            foreach ($request->file('images') as $file) {
-                $path = $file->store('uploads/products', 'public');
-                $newImages[] = $path;
-            }
+//         // Handle new images if uploaded
+//         if ($request->hasFile('images')) {
+//             $newImages = [];
+//             foreach ($request->file('images') as $file) {
+//                 $path = $file->store('uploads/products', 'public');
+//                 $newImages[] = $path;
+//             }
 
-            // Merge with existing images
-            $existingImages = $product->images ?? [];
-            $data['images'] = array_merge($existingImages, $newImages);
+//             // Merge with existing images
+//             $existingImages = $product->images ?? [];
+//             $data['images'] = array_merge($existingImages, $newImages);
+//         }
+
+//         // Update product
+//         $product->update($data);
+
+//         return response()->json($product);
+//     }
+
+
+public function update(Request $request, $id)
+{
+    $product = Product::findOrFail($id);
+    $data = $request->all();
+
+    // Decode existing images (those kept in frontend)
+    $existingImages = json_decode($request->input('existingImages', '[]'), true);
+
+    // Get all current images in DB
+    $currentImages = $product->images ?? [];
+
+    // Determine which images were removed (delete from storage)
+    $removedImages = array_diff($currentImages, $existingImages);
+    foreach ($removedImages as $img) {
+        if (Storage::disk('public')->exists($img)) {
+            Storage::disk('public')->delete($img);
         }
-
-        // Update product
-        $product->update($data);
-
-        return response()->json($product);
     }
 
+    // Handle new uploaded images (from React formData)
+    $newImages = [];
+    if ($request->hasFile('newImages')) {
+        foreach ($request->file('newImages') as $file) {
+            $path = $file->store('uploads/products', 'public');
+            $newImages[] = $path;
+        }
+    }
+
+    // Merge kept + new images
+    $data['images'] = array_merge($existingImages, $newImages);
+
+    // Update product
+    $product->update($data);
+
+    return response()->json([
+        'message' => 'Product updated successfully',
+        'product' => $product
+    ]);
+}
 
 
 
