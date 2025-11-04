@@ -18,7 +18,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg,svgz|max:2048',
             'status' => 'nullable|integer'
         ]);
 

@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-     // Get all products
+    // Get all products
     public function index()
     {
         $products = Product::all();
         return response()->json($products);
     }
+
+
 
     // Get single product
     public function show($id)
@@ -23,89 +25,90 @@ class ProductController extends Controller
     }
 
     public function store(Request $request)
-{
-    $data = $request->all();
+    {
+        $data = $request->all();
 
-    // Images: if uploaded, store paths
-    if ($request->hasFile('images')) {
-        $data['images'] = [];
-        foreach ($request->file('images') as $file) {
-            $path = $file->store('uploads/products', 'public');
-            $data['images'][] = $path;
+        // Images: if uploaded, store paths
+        if ($request->hasFile('images')) {
+            $data['images'] = [];
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('uploads/products', 'public');
+                $data['images'][] = $path;
+            }
         }
+
+        // JSON fields are automatically casted in model
+        $product = Product::create($data);
+
+        return response()->json($product, 201);
     }
 
-    // JSON fields are automatically casted in model
-    $product = Product::create($data);
+    //  // Update product
+    //     public function update(Request $request, $id)
+    //     {
+    //         $product = Product::findOrFail($id);
+    //         $data = $request->all();
 
-    return response()->json($product, 201);
-}
+    //         // Handle new images if uploaded
+    //         if ($request->hasFile('images')) {
+    //             $newImages = [];
+    //             foreach ($request->file('images') as $file) {
+    //                 $path = $file->store('uploads/products', 'public');
+    //                 $newImages[] = $path;
+    //             }
 
-//  // Update product
-//     public function update(Request $request, $id)
-//     {
-//         $product = Product::findOrFail($id);
-//         $data = $request->all();
+    //             // Merge with existing images
+    //             $existingImages = $product->images ?? [];
+    //             $data['images'] = array_merge($existingImages, $newImages);
+    //         }
 
-//         // Handle new images if uploaded
-//         if ($request->hasFile('images')) {
-//             $newImages = [];
-//             foreach ($request->file('images') as $file) {
-//                 $path = $file->store('uploads/products', 'public');
-//                 $newImages[] = $path;
-//             }
+    //         // Update product
+    //         $product->update($data);
 
-//             // Merge with existing images
-//             $existingImages = $product->images ?? [];
-//             $data['images'] = array_merge($existingImages, $newImages);
-//         }
-
-//         // Update product
-//         $product->update($data);
-
-//         return response()->json($product);
-//     }
+    //         return response()->json($product);
+    //     }
 
 
-public function update(Request $request, $id)
-{
-    $product = Product::findOrFail($id);
-    $data = $request->all();
+    public function update(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+        $data = $request->all();
 
-    // Decode existing images (those kept in frontend)
-    $existingImages = json_decode($request->input('existingImages', '[]'), true);
+        // Decode existing images (those kept in frontend)
+        $existingImages = json_decode($request->input('existingImages', '[]'), true);
 
-    // Get all current images in DB
-    $currentImages = $product->images ?? [];
+        // Get all current images in DB
+        $currentImages = $product->images ?? [];
 
-    // Determine which images were removed (delete from storage)
-    $removedImages = array_diff($currentImages, $existingImages);
-    foreach ($removedImages as $img) {
-        if (Storage::disk('public')->exists($img)) {
-            Storage::disk('public')->delete($img);
+        // Determine which images were removed (delete from storage)
+        $removedImages = array_diff($currentImages, $existingImages);
+        foreach ($removedImages as $img) {
+            if (Storage::disk('public')->exists($img)) {
+                Storage::disk('public')->delete($img);
+            }
         }
+
+        // Handle new uploaded images (from React formData)
+        $newImages = [];
+        if ($request->hasFile('newImages')) {
+            foreach ($request->file('newImages') as $file) {
+                $path = $file->store('uploads/products', 'public');
+                $newImages[] = $path;
+            }
+        }
+
+        // Merge kept + new images
+        $data['images'] = array_merge($existingImages, $newImages);
+
+        // Update product
+        $product->update($data);
+
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'product' => $product
+        ]);
     }
 
-    // Handle new uploaded images (from React formData)
-    $newImages = [];
-    if ($request->hasFile('newImages')) {
-        foreach ($request->file('newImages') as $file) {
-            $path = $file->store('uploads/products', 'public');
-            $newImages[] = $path;
-        }
-    }
-
-    // Merge kept + new images
-    $data['images'] = array_merge($existingImages, $newImages);
-
-    // Update product
-    $product->update($data);
-
-    return response()->json([
-        'message' => 'Product updated successfully',
-        'product' => $product
-    ]);
-}
 
 
 
@@ -116,22 +119,20 @@ public function update(Request $request, $id)
 
 
 
-
-   public function destroy($id)
+    public function destroy($id)
     {
         $product = Product::findOrFail($id);
 
         // Delete images from storage
-        if($product->images && is_array($product->images)){
-            foreach($product->images as $img){
-                if(\Storage::disk('public')->exists($img)){
+        if ($product->images && is_array($product->images)) {
+            foreach ($product->images as $img) {
+                if (\Storage::disk('public')->exists($img)) {
                     \Storage::disk('public')->delete($img);
                 }
             }
         }
 
         $product->delete();
-        return response()->json(['success'=>true, 'message'=>'Product deleted']);
+        return response()->json(['success' => true, 'message' => 'Product deleted']);
     }
-
 }
