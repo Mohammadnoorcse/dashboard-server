@@ -22,8 +22,12 @@ class Order extends Model
         'status',
     ];
 
+    // public function items()
+    // {
+    //     return $this->hasMany(OrderItem::class);
+    // }
     public function items()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderItem::class, 'order_id')->with('product');
     }
 }

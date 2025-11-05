@@ -90,6 +90,7 @@ Route::prefix('shipping')->group(function() {
 Route::prefix('products')->group(function() {
     Route::get('/', [ProductController::class, 'index']);
     Route::post('/', [ProductController::class, 'store']);
+    Route::get('/{id}', [ProductController::class, 'show']);
     Route::put('/{id}', [ProductController::class, 'update']);
     Route::delete('/{id}', [ProductController::class, 'destroy']);
 
@@ -156,10 +157,12 @@ Route::prefix('videos')->group(function() {
 
 Route::post('/orders', [OrderController::class, 'store']);
 Route::get('/orders', [OrderController::class, 'index']);
+Route::get('/orders/latest/name', [OrderController::class, 'latestOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::put('/orders/{id}', [OrderController::class, 'update']);
-Route::delete('/orders/{id}', [OrderController::class, 'destroy']); 
+Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
 // Optional: Get orders by user ID
 Route::get('/user/{userId}/orders', [OrderController::class, 'userOrders']);
-Route::get('/orders/latest', [OrderController::class, 'latestOrder']);
+// Route::get('/orders/latest/name', [OrderController::class, 'latestOrder']);
+
