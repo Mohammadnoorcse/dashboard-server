@@ -20,6 +20,7 @@ use App\Http\Controllers\WebFooterLogoController;
 use App\Http\Controllers\HomeSliderController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\UserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -95,6 +96,11 @@ Route::prefix('products')->group(function() {
     Route::delete('/{id}', [ProductController::class, 'destroy']);
 
 });
+
+Route::post('/products/search-image', [ProductController::class, 'searchByImage']);
+
+
+
 Route::prefix('featurestopnavbar')->group(function() {
     Route::get('/', [FeaturesTopNavbarController::class, 'index']);
     Route::post('/', [FeaturesTopNavbarController::class, 'store']);
@@ -164,5 +170,9 @@ Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
 // Optional: Get orders by user ID
 Route::get('/user/{userId}/orders', [OrderController::class, 'userOrders']);
-// Route::get('/orders/latest/name', [OrderController::class, 'latestOrder']);
+
+
+Route::post('/register', [UserController::class, 'register']);
+Route::post('/login', [UserController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 

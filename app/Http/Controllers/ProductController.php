@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
+use Jenssegers\ImageHash\ImageHash;
+use Jenssegers\ImageHash\Implementations\DifferenceHash;
 
 class ProductController extends Controller
 {
@@ -14,6 +16,63 @@ class ProductController extends Controller
         $products = Product::all();
         return response()->json($products);
     }
+
+
+
+public function searchByImage(Request $request)
+{
+    if (!$request->hasFile('image')) {
+        return response()->json(['error' => 'Image file is required'], 400);
+    }
+
+    $image = $request->file('image');
+
+    // Create hasher instance
+    $hasher = new ImageHash(new DifferenceHash());
+
+    // Hash for uploaded search image
+    $uploadedHash = $hasher->hash($image->getRealPath());
+
+    // Fetch all products
+    $products = Product::all();
+
+    $bestMatch = null;
+    $smallestDistance = PHP_INT_MAX;
+
+    foreach ($products as $product) {
+
+        // Skip if product has no images
+        if (!$product->images || !is_array($product->images)) {
+            continue;
+        }
+
+        // Only use first image for comparison
+        $firstImagePath = public_path('storage/' . $product->images[0]);
+
+        if (!file_exists($firstImagePath)) {
+            continue;
+        }
+
+        $productHash = $hasher->hash($firstImagePath);
+
+        // Compare image hash distance
+        $distance = $uploadedHash->distance($productHash);
+
+        if ($distance < $smallestDistance) {
+            $smallestDistance = $distance;
+            $bestMatch = $product;
+        }
+    }
+
+    if (!$bestMatch) {
+        return response()->json(['message' => 'No similar product found']);
+    }
+
+    return response()->json([
+        'similarity_score' => $smallestDistance,
+        'product' => $bestMatch
+    ]);
+}
 
 
 
